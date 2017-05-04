@@ -1,0 +1,1 @@
+You are disconnected. <a href="client">Go back to client</a>

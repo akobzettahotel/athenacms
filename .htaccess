@@ -1,0 +1,4 @@
+RewriteEngine On
+RewriteRule ^swf/habbo-imaging/badge/(.*).gif$ ./swf/habbo-imaging/badge.php?badge=$1
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteRule ^([^\.]+)$ $1.php [NC,L]
