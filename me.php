@@ -306,21 +306,7 @@ function time_elapsed_string($datetime, $full = false) {
 					  echo "<div class='w3-panel w3-pale-green w3-card-4 '><span onclick=\"this.parentElement.style.display='none'\" class='w3-button w3-display-topright'>X</span>Your post have been post.</div>";
 				  }
 			  }
-			  if(isset($_POST["savepost"]))
-			  {
-				  if(!empty($_POST["editpost"]))
-				  {
-					  $savepost = mysqli_real_escape_string($conn, $_POST["savepost"]);
-					  $postid = mysqli_real_escape_string($conn, $_POST["postid"]);
-					  $edited = time();
-					  $editpost = mysqli_real_escape_string($conn, $_POST["editpost"]);
-					  $check1 = mysqli_fetch_assoc(mysqli_query($conn, "SELECT postby FROM athena_post WHERE id = '$postid'"));
-					  if($check1["postby"] == $athena["id"])
-					  {
-						  mysqli_query($conn, "UPDATE athena_post SET poststory = '$editpost', edited = '$edited' WHERE id = '$postid'");
-					  }
-				  }
-			  }
+
 			  ?>
 
 				<textarea name="postwall" class="postwall"></textarea>
@@ -520,7 +506,7 @@ function time_elapsed_string($datetime, $full = false) {
 <!--	//Just combile this and use attr -->
 	<div id="comment-dialog" title="Comment">Loading...</div>
 	<div id="delete-dialog" title="Delete confirmation">Loading...</div>
-	<div id="edit-dialog" title="Edit">Loading...</div>
+	<div id="edit-dialog" title="Edit"><input id="editingpost" style="display:none;"><textarea id="edittextarea" class="postwall"></textarea><button name='savepost' id="savepost" data-postid="0" class='w3-button w3-green'>Save</button></div>
 
 	<!-- end comment form -->
 	
@@ -536,7 +522,8 @@ function time_elapsed_string($datetime, $full = false) {
 			 width: "80%",
 			 modal: true
 		 });
-		 $(".editpost").click(function(){
+		 $(document).on("click", ".editpost", function(){
+			 var postid = $(this).data("postid");
 			 $("#edit-dialog").dialog("open");
 			 $.ajax({
 				 url: "engine.php",
@@ -545,11 +532,26 @@ function time_elapsed_string($datetime, $full = false) {
 					 editpost: $(this).data("postid")
 				 },
 				 success: function(z){
-					$("#edit-dialog").html(z)
+					$("#editingpost").val(postid);
+					tinymce.get('edittextarea').setContent(z);
 				 }
 			 });
 		 });
-		 
+		 $("#savepost").click(function(){
+			 var posti = $("#editingpost").val();
+			 $.ajax({
+				 url: "engine.php",
+				 type: "post",
+				 data: {
+					 savepost: tinymce.get('edittextarea').getContent(),
+					 postid: posti
+				 },
+				 success: function(z){
+					 $("#post" + posti).html(z);
+					 $("#edit-dialog").dialog("close");
+				 }
+			 });
+		 });
 		 //comment dialog
 		 $( "#comment-dialog" ).dialog({
 			autoOpen: false,
@@ -879,7 +881,7 @@ function time_elapsed_string($datetime, $full = false) {
 		
 
 // Like button
-$(".likebutton").click(function(){
+$(document).on("click", ".likebutton", function(){
 	var likes = this.id;
 	$("#" + likes).html("Loading...");
 	$.ajax({

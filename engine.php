@@ -485,16 +485,67 @@ if(isset($_POST["editpost"]))
 		$edit1 = mysqli_fetch_assoc(mysqli_query($conn, "SELECT * FROM athena_post WHERE id = '$editpost'"));
 		if($edit1["postby"] == $_SESSION["athena"])
 		{
-		echo "<script>tinymce.init({selector:'.postwall',theme:'modern',skin:'athena',plugins:['advlist autolink lists link image charmap print preview hr anchor pagebreak','searchreplace wordcount visualblocks visualchars code fullscreen','insertdatetime media nonbreaking save table contextmenu directionality','emoticons template paste textcolor colorpicker textpattern imagetools codesample toc'],toolbar1:'undo redo | insert | styleselect | bold italic striketrough | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link image',toolbar2:'print preview media | forecolor backcolor emoticons | codesample',image_advtab:!0,templates:[{title:'Test template 1',content:'Test 1'},{title:'Test template 2',content:'Test 2'}],content_css:['//www.tinymce.com/css/codepen.min.css']});</script>
-		<form method='post'>
-			<input name='postid' type='number' value='$editpost' class='w3-hide'>
-			<textarea name='editpost' class='postwall'>$edit1[poststory]</textarea>
-			<button name='savepost' class='w3-button w3-green'>Save</button>
-		</form>
-		
-		
-		
-		";
+			echo "$edit1[poststory]";
 		}
+	}
+}
+if(isset($_POST["savepost"]))
+{
+	if(!empty($_POST["savepost"]) && !empty($_POST["postid"]))
+	{
+		$savepost = mysqli_real_escape_string($conn, $_POST["savepost"]);
+		$postid = mysqli_real_escape_string($conn, $_POST["postid"]);
+		$edited = time();
+		$a0 = mysqli_fetch_assoc(mysqli_query($conn, "SELECT postby FROM athena_post WHERE id = '$postid'"));
+		if($a0["postby"] == $_SESSION["athena"])
+		{
+			mysqli_query($conn, "UPDATE athena_post SET poststory = '$savepost', edited = '$edited' WHERE id = '$postid'");
+		}
+		$a1 = mysqli_fetch_assoc(mysqli_query($conn, "SELECT * FROM athena_post WHERE id = '$postid'"));
+		$athena = mysqli_fetch_assoc(mysqli_query($conn, "SELECT * FROM users WHERE id = '$a1[postby]'"));
+		
+		$a4 = mysqli_num_rows(mysqli_query($conn, "SELECT * FROM athena_post_like WHERE pid = '$a1[id]' AND islike = '1'"));
+			  if($a4 < 2)
+			  {
+				  $a5 = "Like";
+			  }
+			  else
+			  {
+				  $a5 = "Likes";
+			  }
+			  $a6 = mysqli_num_rows(mysqli_query($conn, "SELECT * FROM athena_post WHERE comment = '$a1[id]'"));
+			  if($a6 < 2)
+			  {
+				  $a7 = "Comment";
+			  }
+			  else
+			  {
+				 $a7 = "Comments"; 
+			  }
+			  if($a1["edited"] != "0")
+			  {
+				  $a9 = date("d F Y h:i a", $a1["edited"]);
+				  $a8 = "<span class='w3-tag w3-theme-l2 w3-small'>Edited $a9</span>";
+			  }
+			  else
+			  {
+				  $a8 = "";
+			  }
+			  
+		echo "<div class='w3-display-topright'>
+				<div class='w3-bar'>
+  <button class='editpost w3-bar-item w3-button w3-blue' data-postid='$a1[id]'><i class='fa fa-pencil' aria-hidden='true'></i></button>
+  <button class='deletepost w3-bar-item w3-button w3-red' data-postid='$a1[id]'><i class='fa fa-times' aria-hidden='true'></i></button>
+</div>
+</div>
+				<br>
+				<br>
+					<img src='https://avatar-retro.com/habbo-imaging/avatarimage?figure=$athena[look]&headonly=1' alt='Avatar' class='w3-left w3-circle w3-margin-right' style='width:60px'>
+					<span class='w3-right w3-opacity'>" . time_elapsed_string('@' . $a1["posttime"] . '') . "</span>
+					<h4>$athena[username]</h4><br>
+					<hr class='w3-clear'>
+					$a1[poststory] $a8<br>
+        <button id='$a1[id]' type='button' class='likebutton w3-button w3-theme-d1 w3-margin-bottom'><i class='fa fa-thumbs-up'></i> &nbsp; $a4 $a5</button> 
+        <button data-postid='$a1[id]' type='button' class='cmtbutton w3-button w3-theme-d2 w3-margin-bottom'><i class='fa fa-comment'></i> &nbsp; $a6 $a7</button>";
 	}
 }
