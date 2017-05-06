@@ -26,6 +26,27 @@ html,body,h1,h2,h3,h4,h5 {font-family: "Open Sans", sans-serif}
 		background: url(Preloader_3.gif) center no-repeat #fff;
 		
 }
+
+
+.storyoverflow::-webkit-scrollbar-track
+{
+	-webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3);
+	border-radius: 10px;
+	background-color: #F5F5F5;
+}
+
+.storyoverflow::-webkit-scrollbar
+{
+	width: 12px;
+	background-color: #F5F5F5;
+}
+
+.storyoverflow::-webkit-scrollbar-thumb
+{
+	border-radius: 10px;
+	-webkit-box-shadow: inset 0 0 6px rgba(0,0,0,.3);
+	background-color: #4d636f;
+}
 </style>
 <body class="w3-theme-l5">
 <div class="se-pre-con"><center><h1>Loading...</h1></center></div>
@@ -103,6 +124,18 @@ function time_elapsed_string($datetime, $full = false) {
       <a href="?logout" class="w3-bar-item w3-button">Logout</a>
     </div>
   </div>
+   <button class="w3-bar-item w3-button w3-hide-small w3-padding-large w3-right"><?php
+   $getonline = mysqli_fetch_assoc(mysqli_query($conn, "SELECT users_online FROM server_status"));
+   echo $getonline["users_online"];
+   if($getonline["users_online"] > 1)
+   {
+	   echo " users online";
+   }
+   else
+   {
+	   echo " user online";
+   }
+   ?></button>
   </div>
 </div>
 
@@ -342,15 +375,24 @@ function time_elapsed_string($datetime, $full = false) {
 			  {
 				 $a7 = "Comments"; 
 			  }
+			  if($a1["edited"] != "0")
+			  {
+				  $a9 = date("d F Y h:i a", $a1["edited"]);
+				  $a8 = "<span class='w3-tag w3-theme-l2 w3-small'>Edited $a9</span>";
+			  }
+			  else
+			  {
+				  $a8 = "";
+			  }
 			  echo "
 				<div class='w3-container w3-card-2 w3-white w3-round w3-margin'><br>
 					<img src='https://avatar-retro.com/habbo-imaging/avatarimage?figure=$a3[look]&headonly=1' alt='Avatar' class='w3-left w3-circle w3-margin-right' style='width:60px'>
 					<span class='w3-right w3-opacity'>" . time_elapsed_string('@' . $a1["posttime"] . '') . "</span>
 					<h4 class='onprofile' data-onprofile='$a3[username]'>$a3[username]</h4><br>
 					<hr class='w3-clear'>
-					$a1[poststory]
+					<div style='max-height: 250px; overflow:auto;' class='storyoverflow'>$a1[poststory]</div> $a8<br>
          <button id='$a1[id]' type='button' class='likebutton w3-button w3-theme-d1 w3-margin-bottom'><i class='fa fa-thumbs-up'></i> &nbsp; $a4 $a5</button> 
-        <button data-postid='$a1[id]' type='button' class='cmtbutton w3-button w3-theme-d2 w3-margin-bottom'><i class='fa fa-comment'></i> &nbsp; $a6 $a7</button>
+        <button id='cmtcnt$a1[id]' data-postid='$a1[id]' type='button' class='cmtbutton w3-button w3-theme-d2 w3-margin-bottom'><i class='fa fa-comment'></i> &nbsp; $a6 $a7</button>
       </div>  ";
 		  }
 		  else //diri sendiri
@@ -399,9 +441,9 @@ function time_elapsed_string($datetime, $full = false) {
 					<span class='w3-right w3-opacity'>" . time_elapsed_string('@' . $a1["posttime"] . '') . "</span>
 					<h4>$athena[username]</h4><br>
 					<hr class='w3-clear'>
-					$a1[poststory] $a8<br>
+					<div style='max-height: 250px; overflow:auto;' class='storyoverflow'>$a1[poststory]</div> $a8<br>
         <button id='$a1[id]' type='button' class='likebutton w3-button w3-theme-d1 w3-margin-bottom'><i class='fa fa-thumbs-up'></i> &nbsp; $a4 $a5</button> 
-        <button data-postid='$a1[id]' type='button' class='cmtbutton w3-button w3-theme-d2 w3-margin-bottom'><i class='fa fa-comment'></i> &nbsp; $a6 $a7</button> 
+        <button id='cmtcnt$a1[id]' data-postid='$a1[id]' type='button' class='cmtbutton w3-button w3-theme-d2 w3-margin-bottom'><i class='fa fa-comment'></i> &nbsp; $a6 $a7</button> 
 
    </div>  ";
 			}				
@@ -507,6 +549,7 @@ function time_elapsed_string($datetime, $full = false) {
 	<div id="comment-dialog" title="Comment">Loading...</div>
 	<div id="delete-dialog" title="Delete confirmation">Loading...</div>
 	<div id="edit-dialog" title="Edit"><input id="editingpost" style="display:none;"><textarea id="edittextarea" class="postwall"></textarea><button name='savepost' id="savepost" data-postid="0" class='w3-button w3-green'>Save</button></div>
+	<div id="edit-dialogcmt" title="Edit"><input id="editingpostcmt" style="display:none;"><textarea id="edittextareacmt" class="postwall"></textarea><button id="savepostcmt" data-postid="0" class='w3-button w3-green'>Save</button></div>
 
 	<!-- end comment form -->
 	
@@ -518,6 +561,11 @@ function time_elapsed_string($datetime, $full = false) {
 		 <script>
 		 //edit dialog
 		 $("#edit-dialog").dialog({
+			 autoOpen: false,
+			 width: "80%",
+			 modal: true
+		 });
+		 $("#edit-dialogcmt").dialog({
 			 autoOpen: false,
 			 width: "80%",
 			 modal: true
@@ -537,6 +585,21 @@ function time_elapsed_string($datetime, $full = false) {
 				 }
 			 });
 		 });
+		 $(document).on("click", ".editpostcmt", function(){
+			 var postid = $(this).data("postid");
+			 $("#edit-dialogcmt").dialog("open");
+			 $.ajax({
+				 url: "engine.php",
+				 type: "post",
+				 data: {
+					 editpostcmt: $(this).data("postid")
+				 },
+				 success: function(z){
+					$("#editingpostcmt").val(postid);
+					tinymce.get('edittextareacmt').setContent(z);
+				 }
+			 });
+		 });
 		 $("#savepost").click(function(){
 			 var posti = $("#editingpost").val();
 			 $.ajax({
@@ -549,6 +612,22 @@ function time_elapsed_string($datetime, $full = false) {
 				 success: function(z){
 					 $("#post" + posti).html(z);
 					 $("#edit-dialog").dialog("close");
+				 }
+			 });
+		 }); 
+		 
+		 $("#savepostcmt").click(function(){
+			 var posti = $("#editingpostcmt").val();
+			 $.ajax({
+				 url: "engine.php",
+				 type: "post",
+				 data: {
+					 savepostcmt: tinymce.get('edittextareacmt').getContent(),
+					 postid: posti
+				 },
+				 success: function(z){
+					 $("#postcmt" + posti).html(z);
+					 $("#edit-dialogcmt").dialog("close");
 				 }
 			 });
 		 });
@@ -580,7 +659,7 @@ function time_elapsed_string($datetime, $full = false) {
 			autoOpen: false,
 			modal: true
 		});
-		$(".deletepost").click(function(event){
+		$(document).on("click", ".deletepost", function(event){
 			$("#delete-dialog").dialog("open");
 			$("#delete-dialog").html("Loading post...");
 			$.ajax({
@@ -590,7 +669,23 @@ function time_elapsed_string($datetime, $full = false) {
 					deletepost: $(this).data("postid")
 				},
 				success: function(z){
-					$("#delete-dialog").html(z)
+					$("#delete-dialog").html(z);
+				}
+			});
+			event.preventDefault();
+		});
+		 
+		 $(document).on("click", ".deletecmtpost", function(event){
+			$("#delete-dialog").dialog("open");
+			$("#delete-dialog").html("Loading post...");
+			$.ajax({
+				url: "engine.php",
+				type: "post",
+				data: {
+					deletecmtpost: $(this).data("postid")
+				},
+				success: function(z){
+					$("#delete-dialog").html(z);
 				}
 			});
 			event.preventDefault();
@@ -767,8 +862,33 @@ function time_elapsed_string($datetime, $full = false) {
       </div>
       <br>
       
-      <div class="w3-card-2 w3-round w3-white w3-padding-32 w3-center">
-	  <h5>Change Log</h5>
+      <div class="w3-card-2 w3-round w3-white w3-padding-32 storyoverflow w3-padding" style="max-height: 300px; overflow:auto;">
+	  <div class="w3-center">
+	  <h5>Change Log Emulator</h5>
+
+        <p><i class="fa fa-bug w3-xxlarge"></i></p>
+		</div>
+		<u>Date: 5.5.2017 10.18 PM</u><br>
+		<b>New Log: </b> New Log: RentableSpace Added, Navigator Improved, CrackableEggs Improved <hr>
+		
+		<u>Date: 5.5.2017 8.53 PM</u><br>
+		<b>New Log: </b>Navigator Search Improved + Feature Navigator (Staff Picks) , CrackableEggs Improved get some new item when the egg is cracked<hr>
+		
+		<u>Date Log: 3.5.2017 5.43 PM</u><br>
+		<b>Log: </b>Crafting System improved, Recyclers(Ecotron) System improved, Room Polls improved, Combat System Fixed, Guide System improved & ball improved<hr>
+		
+		<u>Date Log: 1.5.2017 6.39 PM</u><br>
+		<b>Log: </b>Crafting System Added, Crackable Eggs added 100% work, Catalogue Ecotron Added<hr>
+		
+		<u>Date Log: 26.4.2017 9.16 PM</u><br>
+		<b>Log: </b>Guide Helper Tool Added<hr>
+		
+		<u>Date Log: 22.4.2017  8.50 AM</u><br>
+		<b>Log: </b>Added Polls feature, Navigator search improved , inventory quick load , fishing system improved , friend list quick load<hr>
+      </div>
+	  <br>
+	  <div class="w3-card-2 w3-round w3-white w3-padding-32 w3-center">
+	  <h5>Change Log CMS</h5>
 	  <span>(Version 2.1.0)</span>
         <p><i class="fa fa-bug w3-xxlarge"></i></p>
 		<ul>
@@ -827,9 +947,45 @@ function time_elapsed_string($datetime, $full = false) {
 			},
 			success: function(z){
 				$('#showcommentarea').html(z);
+				updatecmtcount(reqcmt);
 			}
 		});
 		});
+		
+		function updatecmtcount(y){
+			$.ajax({
+				url: "engine.php",
+				type: "post",
+				data: {
+					updatecmtcnt: y
+				},
+				success: function(z){
+					$("#cmtcnt" + y).html(z);
+				}
+			});
+		}
+		function updatecmtcounts(y){
+			var upd = y;
+			$.ajax({
+				url: "engine.php",
+				type: "post",
+				data: {
+					updatecmtcnts: upd
+				},
+				success: function(z){
+					$.ajax({
+					url: "engine.php",
+					type: "post",
+					data: {
+						updatecmtcnt: z
+					},
+					success: function(y){
+						$("#cmtcnt" + z).html(y);
+					}
+			});
+				}
+			});
+		}
 		
 //delete post
 	
@@ -852,6 +1008,24 @@ function time_elapsed_string($datetime, $full = false) {
 					{
 						$('#post' + deletepost).html('Error unknown')
 					}
+				}
+			});
+		});
+		
+		$(document).on('click', '.dodeletecmtpost', function(){
+			var deletepost = $(this).data('postid');
+			$('#comment-dialog').html('Deleting...');
+			$('#delete-dialog').dialog( 'close' );
+			updatecmtcounts(deletepost);
+			$.ajax({
+				url: 'engine.php',
+				type: 'post',
+				data: {
+					dodeletecmtpost: deletepost
+				},
+				success: function(z){
+					$("#comment-dialog").html(z);
+					
 				}
 			});
 		});

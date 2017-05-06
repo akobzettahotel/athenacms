@@ -1,7 +1,7 @@
 <?php
 session_start();
 include("database.php");
-
+date_default_timezone_set("Asia/Kuala_Lumpur");
 function time_elapsed_string($datetime, $full = false) {
     $now = new DateTime;
     $ago = new DateTime($datetime);
@@ -391,12 +391,36 @@ if(isset($_POST["request_comment"]))
 		{
 			while($a1 = mysqli_fetch_assoc($req1))
 			{
+				if($a1["edited"] != "0")
+			  {
+				  $a9 = date("d F Y h:i a", $a1["edited"]);
+				  $a8 = "<span class='w3-tag w3-theme-l2 w3-small'>Edited $a9</span>";
+			  }
+			  else
+			  {
+				  $a8 = "";
+			  }
+			  if($a1["postby"] == $_SESSION["athena"])
+			  {
+				  $a10 = "<div class='w3-display-topright'>
+				<div class='w3-bar w3-margin-bottom'>
+  <button class='editpostcmt w3-bar-item w3-button w3-blue w3-tiny' data-postid='$a1[id]'><i class='fa fa-pencil' aria-hidden='true'></i></button>
+  <button class='deletecmtpost w3-bar-item w3-button w3-red w3-tiny' data-postid='$a1[id]'><i class='fa fa-times' aria-hidden='true'></i></button>
+</div>
+</div><br>";
+			  }
+			  else
+			  {
+				  $a10 = "";
+			  }
 				$a3 = mysqli_fetch_assoc(mysqli_query($conn, "SELECT * FROM users WHERE id = '$a1[postby]'"));
-				echo "<div class='w3-container w3-card-2 w3-white w3-round w3-margin'>
+				echo "<div class='w3-container w3-display-container w3-card-2 w3-white w3-round w3-margin'>
+				$a10
 					<img src='https://avatar-retro.com/habbo-imaging/avatarimage?figure=$a3[look]&headonly=1' alt='Avatar' class='w3-left w3-circle w3-margin-right' style='width:60px'>
 					<span class='w3-right w3-opacity'>" . time_elapsed_string('@' . $a1["posttime"] . '') . "</span>
+					
 					<h4 class='onprofile' data-onprofile='$a3[username]'>$a3[username]</h4>
-					$a1[poststory]<br>
+					<div id='postcmt$a1[id]'>$a1[poststory] $a8</div><br>
 					</div>";
 			}
 		}
@@ -422,7 +446,7 @@ if(isset($_POST["sendcomment"])){
 	$commenton = mysqli_real_escape_string($conn, $_POST["commenton"]);
 	$sendtimer = time();
 	
-	mysqli_query($conn, "INSERT INTO athena_post (postby, postat, posttime, poststory, comment) VALUES ('$_SESSION[athena]', '0', '$sendtimer', '$sendcomment', '$commenton')");
+	mysqli_query($conn, "INSERT INTO athena_post (postby, postat, posttime, poststory, comment, edited) VALUES ('$_SESSION[athena]', '0', '$sendtimer', '$sendcomment', '$commenton', '0')");
 //	echo "INSERT INTO athena_post (postby, postat, posttime, poststory, comment) VALUES ('$_SESSION[athena]', '0', '$sendtimer', '$sendcomment', '$commenton')";
 	
 	if(!empty($_POST["commenton"]))
@@ -435,11 +459,34 @@ if(isset($_POST["sendcomment"])){
 			while($a1 = mysqli_fetch_assoc($req1))
 			{
 				$a3 = mysqli_fetch_assoc(mysqli_query($conn, "SELECT * FROM users WHERE id = '$a1[postby]'"));
-				echo "<div class='w3-container w3-card-2 w3-white w3-round w3-margin'>
+				if($a1["postby"] == $_SESSION["athena"])
+			  {
+				  if($a1["edited"] != "0")
+			  {
+				  $a9 = date("d F Y h:i a", $a1["edited"]);
+				  $a8 = "<span class='w3-tag w3-theme-l2 w3-small'>Edited $a9</span>";
+			  }
+			  else
+			  {
+				  $a8 = "";
+			  }
+				  $a10 = "<div class='w3-display-topright'>
+				<div class='w3-bar w3-margin-bottom'>
+  <button class='editpostcmt w3-bar-item w3-button w3-blue w3-tiny' data-postid='$a1[id]'><i class='fa fa-pencil' aria-hidden='true'></i></button>
+  <button class='deletecmtpost w3-bar-item w3-button w3-red w3-tiny' data-postid='$a1[id]'><i class='fa fa-times' aria-hidden='true'></i></button>
+</div>
+</div><br>";
+			  }
+			  else
+			  {
+				  $a10 = "";
+			  }
+				echo "<div class='w3-container w3-display-container w3-card-2 w3-white w3-round w3-margin'>
+				$a10
 					<img src='https://avatar-retro.com/habbo-imaging/avatarimage?figure=$a3[look]&headonly=1' alt='Avatar' class='w3-left w3-circle w3-margin-right' style='width:60px'>
 					<span class='w3-right w3-opacity'>" . time_elapsed_string('@' . $a1["posttime"] . '') . "</span>
 					<h4 class='onprofile' data-onprofile='$a3[username]'>$a3[username]</h4>
-					$a1[poststory]<br>
+					<div id='postcmt$a1[id]'>$a1[poststory] $a8</div><br>
 					</div>";
 			}
 		}
@@ -463,6 +510,14 @@ if(isset($_POST["deletepost"]))
 		echo "Are you sure to delete your post?<br><br><center><button data-postid='$deletepost' class='dodeletepost w3-button w3-green'>Delete</button> <button onclick=\"$('#delete-dialog').dialog( 'close' )\" class='w3-button w3-red'>Cancel</button></center>";
 	}
 }
+if(isset($_POST["deletecmtpost"]))
+{
+	if(!empty($_POST["deletecmtpost"]))
+	{
+		$deletepost = mysqli_real_escape_string($conn, $_POST["deletecmtpost"]);
+		echo "Are you sure to delete your comment?<br><br><center><button data-postid='$deletepost' class='dodeletecmtpost w3-button w3-green'>Delete</button> <button onclick=\"$('#delete-dialog').dialog( 'close' )\" class='w3-button w3-red'>Cancel</button></center>";
+	}
+}
 if(isset($_POST["dodeletepost"]))
 {
 	if(!empty($_POST["dodeletepost"]))
@@ -477,11 +532,86 @@ if(isset($_POST["dodeletepost"]))
 	}
 }
 
+if(isset($_POST["dodeletecmtpost"]))
+{
+	if(!empty($_POST["dodeletecmtpost"]))
+	{
+		$dodeletepost = mysqli_real_escape_string($conn, $_POST["dodeletecmtpost"]);
+		$check = mysqli_fetch_assoc(mysqli_query($conn, "SELECT * FROM athena_post WHERE id = '$dodeletepost'"));
+		if($check["postby"] == $_SESSION["athena"])
+		{
+			mysqli_query($conn, "DELETE FROM athena_post WHERE id = '$dodeletepost'");
+			
+			$request_comment = $check["comment"];
+		echo "<textarea class='w3-input' id='commentwall'></textarea><button id='sendcomment' class='w3-button w3-theme-d4' data-postid='$request_comment'>Comment</button><hr><div id='showcommentarea'>";
+		$req1 = mysqli_query($conn, "SELECT * FROM athena_post WHERE comment = '$request_comment' ORDER BY id DESC");
+		if(mysqli_num_rows($req1) > 0)
+		{
+			while($a1 = mysqli_fetch_assoc($req1))
+			{
+				if($a1["edited"] != "0")
+			  {
+				  $a9 = date("d F Y h:i a", $a1["edited"]);
+				  $a8 = "<span class='w3-tag w3-theme-l2 w3-small'>Edited $a9</span>";
+			  }
+			  else
+			  {
+				  $a8 = "";
+			  }
+			  if($a1["postby"] == $_SESSION["athena"])
+			  {
+				  $a10 = "<div class='w3-display-topright'>
+				<div class='w3-bar w3-margin-bottom'>
+  <button class='editpostcmt w3-bar-item w3-button w3-blue w3-tiny' data-postid='$a1[id]'><i class='fa fa-pencil' aria-hidden='true'></i></button>
+  <button class='deletecmtpost w3-bar-item w3-button w3-red w3-tiny' data-postid='$a1[id]'><i class='fa fa-times' aria-hidden='true'></i></button>
+</div>
+</div><br>";
+			  }
+			  else
+			  {
+				  $a10 = "";
+			  }
+				$a3 = mysqli_fetch_assoc(mysqli_query($conn, "SELECT * FROM users WHERE id = '$a1[postby]'"));
+				echo "<div class='w3-container w3-display-container w3-card-2 w3-white w3-round w3-margin'>
+				$a10
+					<img src='https://avatar-retro.com/habbo-imaging/avatarimage?figure=$a3[look]&headonly=1' alt='Avatar' class='w3-left w3-circle w3-margin-right' style='width:60px'>
+					<span class='w3-right w3-opacity'>" . time_elapsed_string('@' . $a1["posttime"] . '') . "</span>
+					
+					<h4 class='onprofile' data-onprofile='$a3[username]'>$a3[username]</h4>
+					<div id='postcmt$a1[id]'>$a1[poststory] $a8</div><br>
+					</div>";
+			}
+		}
+		else
+		{
+			echo "No comment";
+		}
+		echo "</div>
+		<script>
+		
+		</script>
+		";
+		}
+	}
+}
+
 if(isset($_POST["editpost"]))
 {
 	if(!empty($_POST["editpost"]))
 	{
 		$editpost = mysqli_real_escape_string($conn, $_POST["editpost"]);
+		$edit1 = mysqli_fetch_assoc(mysqli_query($conn, "SELECT * FROM athena_post WHERE id = '$editpost'"));
+		if($edit1["postby"] == $_SESSION["athena"])
+		{
+			echo "$edit1[poststory]";
+		}
+	}
+}
+if(isset($_POST["editpostcmt"]))
+{
+	if(!empty($_POST["editpostcmt"]))
+	{
+		$editpost = mysqli_real_escape_string($conn, $_POST["editpostcmt"]);
 		$edit1 = mysqli_fetch_assoc(mysqli_query($conn, "SELECT * FROM athena_post WHERE id = '$editpost'"));
 		if($edit1["postby"] == $_SESSION["athena"])
 		{
@@ -547,5 +677,70 @@ if(isset($_POST["savepost"]))
 					$a1[poststory] $a8<br>
         <button id='$a1[id]' type='button' class='likebutton w3-button w3-theme-d1 w3-margin-bottom'><i class='fa fa-thumbs-up'></i> &nbsp; $a4 $a5</button> 
         <button data-postid='$a1[id]' type='button' class='cmtbutton w3-button w3-theme-d2 w3-margin-bottom'><i class='fa fa-comment'></i> &nbsp; $a6 $a7</button>";
+	}
+}
+
+if(isset($_POST["savepostcmt"]))
+{
+	if(!empty($_POST["savepostcmt"]) && !empty($_POST["postid"]))
+	{
+		$savepost = mysqli_real_escape_string($conn, $_POST["savepostcmt"]);
+		$postid = mysqli_real_escape_string($conn, $_POST["postid"]);
+		$edited = time();
+		$a0 = mysqli_fetch_assoc(mysqli_query($conn, "SELECT postby FROM athena_post WHERE id = '$postid'"));
+		if($a0["postby"] == $_SESSION["athena"])
+		{
+			mysqli_query($conn, "UPDATE athena_post SET poststory = '$savepost', edited = '$edited' WHERE id = '$postid'");
+		}
+		$a1 = mysqli_fetch_assoc(mysqli_query($conn, "SELECT * FROM athena_post WHERE id = '$postid'"));
+		$a9 = date("d F Y h:i a", $a1["edited"]);
+		$a8 = "<span class='w3-tag w3-theme-l2 w3-small'>Edited $a9</span>";
+		echo "$a1[poststory] $a8";
+	}
+}
+if(isset($_POST["updatecmtcnt"]))
+{
+	if(!empty($_POST["updatecmtcnt"]))
+	{
+		$updatecmtcnt = mysqli_real_escape_string($conn, $_POST["updatecmtcnt"]);
+		$a0 = mysqli_num_rows(mysqli_query($conn, "SELECT comment FROM athena_post WHERE comment = '$updatecmtcnt'"));
+		if($a0 > 1)
+		{
+			$a1 = " Comments";
+		}
+		else
+		{
+			$a1 = " Comment";
+		}
+		echo "<i class='fa fa-comment'></i> &nbsp; $a0 $a1";
+	}
+}
+
+if(isset($_POST["updatecmtcnts"]))
+{
+	if(!empty($_POST["updatecmtcnts"]))
+	{
+		$updatecmtcnt = mysqli_real_escape_string($conn, $_POST["updatecmtcnts"]);
+		$b0 = mysqli_fetch_assoc(mysqli_query($conn, "SELECT * FROM athena_post WHERE id = '$updatecmtcnt'"));
+		echo $b0["comment"];
+	}
+}
+
+if(isset($_POST["updatecmtcntss"]))
+{
+	if(!empty($_POST["updatecmtcntss"]))
+	{
+		$updatecmtcnt = mysqli_real_escape_string($conn, $_POST["updatecmtcntss"]);
+		$a0 = mysqli_num_rows(mysqli_query($conn, "SELECT comment FROM athena_post WHERE comment = '$updatecmtcnt'"));
+		if($a0 > 1)
+		{
+			$a1 = " Comments";
+		}
+		else
+		{
+			$a1 = " Comment";
+		}
+		$a2 = $a1-1;
+		echo "<i class='fa fa-comment'></i> &nbsp; $a2 $a1";
 	}
 }
