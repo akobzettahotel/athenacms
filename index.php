@@ -101,45 +101,24 @@ function isEmail(email) {
 	$("#do_reg").click(function(){
 		do_register();
 	});
+	
+	$('#reg_username, #reg_email, #reg_pass1, #reg_pass2').keypress(function (e) {
+		if (e.which == 13) {
+			do_register();
+			return false;    //<---- Add this line
+		}
+	});
+	
 	$("#login").click(function(){
 		do_login();
 	});
-	$('#reg_username').keypress(function (e) {
-		if (e.which == 13) {
-			do_register();
-			return false;    //<---- Add this line
-		}
-	});
-	$('#reg_email').keypress(function (e) {
-		if (e.which == 13) {
-			do_register();
-			return false;    //<---- Add this line
-		}
-	});
-	$('#reg_pass1').keypress(function (e) {
-		if (e.which == 13) {
-			do_register();
-			return false;    //<---- Add this line
-		}
-	});
-	$('#reg_pass2').keypress(function (e) {
-		if (e.which == 13) {
-			do_register();
-			return false;    //<---- Add this line
-		}
-	});
-	$('#log_username').keypress(function (e) {
+	$('#log_username, #log_pass').keypress(function (e) {
 		if (e.which == 13) {
 			do_login();
 			return false;    //<---- Add this line
 		}
 	});
-	$('#log_pass').keypress(function (e) {
-		if (e.which == 13) {
-			do_login();
-			return false;    //<---- Add this line
-		}
-	});
+	
 	function do_register(){
 		$("#reg_msg").show("explode");
 		if($("#reg_username").val().length === 0)
