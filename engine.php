@@ -674,7 +674,7 @@ if(isset($_POST["savepost"]))
 					<span class='w3-right w3-opacity'>" . time_elapsed_string('@' . $a1["posttime"] . '') . "</span>
 					<h4>$athena[username]</h4><br>
 					<hr class='w3-clear'>
-					$a1[poststory] $a8<br>
+					<div style='max-height: 250px; overflow:auto;' class='storyoverflow'>$a1[poststory]</div> $a8<br>
         <button id='$a1[id]' type='button' class='likebutton w3-button w3-theme-d1 w3-margin-bottom'><i class='fa fa-thumbs-up'></i> &nbsp; $a4 $a5</button> 
         <button data-postid='$a1[id]' type='button' class='cmtbutton w3-button w3-theme-d2 w3-margin-bottom'><i class='fa fa-comment'></i> &nbsp; $a6 $a7</button>";
 	}
