@@ -744,3 +744,25 @@ if(isset($_POST["updatecmtcntss"]))
 		echo "<i class='fa fa-comment'></i> &nbsp; $a2 $a1";
 	}
 }
+if(isset($_POST["changepass"]))
+{
+	if(!empty($_POST["cur"]) && !empty($_POST["pass1"]) && !empty($_POST["pass2"]))
+	{
+		if($_POST["pass1"] == $_POST["pass2"])
+		{
+			$cur = mysqli_real_escape_string($conn, $_POST["cur"]);
+			$pass = mysqli_real_escape_string($conn, $_POST["pass1"]);
+			$a0 = mysqli_fetch_assoc(mysqli_query($conn, "SELECT password FROM users WHERE id = '$_SESSION[athena]'"));
+			if(password_verify($cur, $a0["password"]))
+			{
+				$a1 = password_hash($pass, PASSWORD_DEFAULT);
+				mysqli_query($conn, "UPDATE users SET password = '$a1' WHERE id = '$_SESSION[athena]'");
+				echo "OK";
+			}
+			else
+			{
+				echo "Current password incorrect.";
+			}
+		}
+	}
+}

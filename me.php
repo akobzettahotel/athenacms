@@ -473,6 +473,9 @@
 										</span>
 										<p id="setting_msg_content" ><strong>Loading...</strong></p>
 									</div>
+									<p>
+										<button id="btnChangePass" class="w3-button w3-theme">Change Password</button>
+									</p>
 									<!-- setting msg -->
 									<p>
 										<label class="w3-text-theme"><b>Motto:</b></label>
@@ -533,6 +536,7 @@
 				<div id="delete-dialog" title="Delete confirmation">Loading...</div>
 				<div id="edit-dialog" title="Edit"><input id="editingpost" style="display:none;"><textarea id="edittextarea" class="postwall"></textarea><button name='savepost' id="savepost" data-postid="0" class='w3-button w3-green'>Save</button></div>
 				<div id="edit-dialogcmt" title="Edit"><input id="editingpostcmt" style="display:none;"><textarea id="edittextareacmt" class="postwall"></textarea><button id="savepostcmt" data-postid="0" class='w3-button w3-green'>Save</button></div>
+				<div id="dialog"></div>
 				<!-- end invisible dialog -->
 	
 				<!-- Right Column -->
@@ -640,6 +644,8 @@
 							<h5>Change Log Emulator</h5>
 								<p><i class="fa fa-bug w3-xxlarge"></i></p>
 						</div>
+						<u>Date Log: 6.5.2017 , 9.58 PM</u><br>
+						<b>Log: </b>SWF Revision updated to PRODUCTION-201704051204-452050219 (5.4.2017), Food Manager added (Eating System)<br>
 						
 						<u>Date: 5.5.2017 10.18 PM</u><br>
 						<b>New Log: </b> New Log: RentableSpace Added, Navigator Improved, CrackableEggs Improved <hr>
@@ -694,7 +700,83 @@
 				// Animate loader off screen
 				$(".se-pre-con").fadeOut("slow");
 			});
-
+			
+			$("#dialog").dialog({
+				autoOpen: false,
+				modal: true
+			});
+			
+			$("#btnChangePass").click(function(){
+				$("#dialog").html("<div id='dialog_msg' style='display:none;'></div><label class='w3-text-theme'>Current password:</label><input id='setting_cur_pass' type='password' class='w3-input'><label class='w3-text-theme'>New password:</label><input id='setting_new_pass1' type='password' class='w3-input'><label class='w3-text-theme'>Confirm password</label><input id='setting_new_pass2' type='password' class='w3-input'>");
+				$("#dialog").dialog({
+					title: "Change password",
+					buttons: [
+						{
+							text: "Save",
+							click: function(){
+								do_changepass();
+							}
+						},
+						{
+							text: "Cancel",
+							click: function(){
+								$(this).dialog("close");
+							}
+						}
+					]
+				});
+				$("#dialog").dialog("open");
+			});
+			
+			$(document).on("keypress", "#setting_cur_pass, #setting_new_pass1, #setting_new_pass2", function (e) {
+				if (e.which == 13) {
+					do_changepass();
+					return false; 
+				}
+			});
+			
+			function do_changepass(){
+				$("#dialog_msg").html("Loading...");
+				$("#dialog_msg").show();
+				if($("#setting_cur_pass").val() && $("#setting_new_pass1").val() && $("#setting_new_pass2").val())
+				{
+					if($("#setting_new_pass1").val() == $("#setting_new_pass2").val())
+					{
+						$.ajax({
+							url: "engine.php",
+							type: "post",
+							data: {
+								changepass: 1,
+								cur: $("#setting_cur_pass").val(),
+								pass1: $("#setting_new_pass1").val(),
+								pass2: $("#setting_new_pass2").val()
+							},
+							success: function(z)
+							{
+								if(z == "OK")
+								{
+									$("#setting_msg").html("Password successfully change.");
+									$("#setting_msg").show();
+									$("#dialog").dialog("close");
+								}
+								else
+								{
+									$("#dialog_msg").html(z);
+								}
+							}
+						})
+					}
+					else
+					{
+						$("#dialog_msg").html("New password not match");
+					}
+				}
+				else
+				{
+					$("#dialog_msg").html("Please fill all form");
+				}
+			}
+			
 			//edit dialog
 			$("#edit-dialog").dialog({
 				autoOpen: false,
