@@ -171,7 +171,15 @@ function isEmail(email) {
 						password: $('#reg_pass1').val()
 					},
 					success: function(c) {
-						$("#reg_msg_sub").html(c);
+						if(c == "Logging in...")
+						{
+							$('#log_msg_sub').html("Creating account... Logging in...(<a href='me'>Click here if not load in 3 second</a>)");
+							window.location.reload();
+						}
+						else
+						{
+							$('#log_msg_sub').html(c);
+						}
 					}
 				});
 			}
@@ -200,7 +208,15 @@ function isEmail(email) {
 					password: $('#log_pass').val()
 				},
 				success: function(c){
-					$('#log_msg_sub').html(c)
+					if(c == "Logging in...")
+					{
+						$('#log_msg_sub').html("Logging in...(<a href='me'>Click here if not load in 3 second</a>)");
+						window.location.reload();
+					}
+					else
+					{
+						$('#log_msg_sub').html(c);
+					}
 				}
 			});
 		}

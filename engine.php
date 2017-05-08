@@ -62,12 +62,10 @@ if(isset($_POST["register"]))
 					$create = time();
 					$sso = 'ZettaCMS-'.rand(9,999).'/'.substr(sha1(time()).'/'.rand(9,9999999).'/'.rand(9,9999999).'/'.rand(9,9999999),0,33);
 					mysqli_query($conn, "INSERT INTO users (username, password, mail, auth_ticket, credits, account_created, look) VALUES ('$username', '$passw', '$email', '$sso', '0', '$create', 'ch-255-63.hd-208-1.hr-3163-31.lg-280-1408.')");
-					//echo "INSERT INTO users (username, password, mail, auth_ticket, credits, account_created, look) VALUES ('$username', '$passw', '$email', '$sso', '0', '$create', 'ch-255-63.hd-208-1.hr-3163-31.lg-280-1408.')";
 					$login = mysqli_fetch_assoc(mysqli_query($conn, "SELECT * FROM users WHERE username = '$username'"));
 					$_SESSION["athena"] = $login["id"];
 					$_SESSION["athena_sso"] = $sso;
-					//mysqli_query($conn, "INSERT INTO zetta (id) VALUES ('$login[id]')");
-					echo "<script>window.location.href = 'me';</script>Creating your account...";
+					echo "Logging in...";
 				}
 			}
 		}
@@ -93,11 +91,6 @@ if(isset($_POST["login"]))
 				mysqli_query($conn, "UPDATE users SET auth_ticket = '$sso' WHERE id = '$login2[id]'");
 				$_SESSION["athena"] = $login2["id"];
 				$_SESSION["athena_sso"] = $sso;
-	//			$checkzetta = mysqli_num_rows(mysqli_query($conn, "SELECT * FROM zetta WHERE id = '$login2[id]'"));
-	//			if($checkzetta < 1)
-	//			{
-	//				mysqli_query($conn, "INSERT INTO zetta (id) VALUES ('$login2[id]')");
-	//			}
 				echo "Logging in.(<a href='me'>Click here if not load in 3 second</a>)<script>window.location.replace(\"me\");
 				location.reload();
 				</script>";
@@ -119,13 +112,7 @@ if(isset($_POST["login"]))
 					mysqli_query($conn, "UPDATE users SET auth_ticket = '$sso' WHERE id = '$login21[id]'");
 					$_SESSION["athena"] = $login21["id"];
 					$_SESSION["athena_sso"] = $sso;
-//					$checkzetta = mysqli_num_rows(mysqli_query($conn, "SELECT * FROM zetta WHERE id = '$login21[id]'"));
-//					if($checkzetta < 1)
-//					{
-//						mysqli_query($conn, "INSERT INTO zetta (id) VALUES ('$login21[id]')");
-//					}
-					echo "Logging in.(<a href='me'>Click here if not load in 3 second</a>)<script>window.location.replace(\"me\");
-					location.reload();</script>";
+					echo "Logging in...";
 				}
 				else
 				{
