@@ -7,6 +7,7 @@
 		<meta name="description" content="Zetta is a teen social virtual life game. A strange place with awesome people. Meet and make friends, play games, chat with others, create your avatar, design rooms and more.">
 		<meta name="keywords" content="Habbo,retro,game,rp,halfrp,social,zetta">
 		<meta name="author" content="Akob And Wave">
+		<meta name="theme-color" content="#4d636f" />
 		<meta name="viewport" content="width=device-width, initial-scale=1">
 
 		<link rel="stylesheet" href="css/w3.css">
@@ -116,6 +117,7 @@
 				<a class="w3-bar-item w3-button w3-hide-medium w3-hide-large w3-right w3-padding-large w3-hover-white w3-large w3-theme-d2" href="javascript:void(0);" onclick="openNav()"><i class="fa fa-bars"></i></a>
 				<a href="me" class="w3-bar-item w3-button w3-padding-large w3-theme-d4"><i class="fa fa-home w3-margin-right"></i>Zetta&trade; <sub>Athena</sub></a>
 				<a href="#" class="w3-bar-item w3-button w3-hide-small w3-padding-large w3-hover-white" title="News"><i class="fa fa-globe"></i></a>
+				<a href="#" class="w3-bar-item w3-button w3-hide-small w3-padding-large w3-hover-white newsBtn" title="Account Settings"><i class="fa fa-newspaper-o"></i></a>
 				<a href="#" class="w3-bar-item w3-button w3-hide-small w3-padding-large w3-hover-white" title="Account Settings"><i class="fa fa-user"></i></a>
 				<a href="#" class="w3-bar-item w3-button w3-hide-small w3-padding-large w3-hover-white" title="Messages"><i class="fa fa-envelope"></i></a>
 				<div class="w3-dropdown-hover w3-hide-small">
@@ -213,14 +215,19 @@
 					</div>
 					
 					<!-- Profile -->
-					<div class="w3-card-2 w3-round w3-white">
+					<div class="leftcol w3-card-2 w3-round w3-white">
 						<div class="w3-container">
 							<h4 class="w3-center"><?php echo $athena["username"]; ?></h4>
 							<p class="w3-center"><img src="https://avatar-retro.com/habbo-imaging/avatarimage?figure=<?php echo $athena["look"]; ?>" class="w3-circle" style="height:106px;" alt="Avatar"></p>
 							<a href="client" target="zettaclient" class="w3-button w3-block w3-green">Enter Client</a>
 							<hr>
 							<p><i class="fa fa-pencil fa-fw w3-margin-right w3-text-theme"></i> <span id="display_motto"><?php echo $athena["motto"]; ?></span></p>
-							<p><i class="fa fa-home fa-fw w3-margin-right w3-text-theme"></i> home_room</p>
+							<?php
+							if($athena["home_room"] != "0"){
+								$home_room = mysqli_fetch_assoc(mysqli_query($conn, "SELECT caption FROM rooms WHERE id = '$athena[home_room]'"));
+								echo "<p><i class='fa fa-home fa-fw w3-margin-right w3-text-theme'></i> $home_room[caption]</p>";
+							}
+							?>
 							<p><i class="fa fa-birthday-cake fa-fw w3-margin-right w3-text-theme"></i> <?php $esdate = date("d F Y", $athena["account_created"]); echo $esdate; ?></p>
 						</div>
 					</div>
@@ -228,7 +235,7 @@
 					<br>
       
 					<!-- Accordion -->
-					<div class="w3-card-2 w3-round">
+					<div class="leftcol w3-card-2 w3-round">
 						<div class="w3-white">
 						
 							<button onclick="myFunction('Demo1')" class="w3-button w3-block w3-theme-l1 w3-left-align">
@@ -320,7 +327,7 @@
 					<br>
       
 					<!-- Interests --> 
-					<div class="w3-card-2 w3-round w3-white w3-hide-small">
+					<div class="leftcol w3-card-2 w3-round w3-white w3-hide-small">
 						<div class="w3-container">
 							<p>Interests</p>
 							<p>
@@ -338,7 +345,14 @@
 							</p>
 						</div>
 					</div>
-					
+					<div class="leftcol w3-card w3-white" id="newsListCol">
+						<div class="w3-panel w3-theme">
+							<p>News list</p>
+							</div>
+							<ul class="w3-ul">
+								<div id="newsList"></div>
+							</ul>
+					</div>
 					<br>
       
 					<!-- Alert Box -->
@@ -349,7 +363,9 @@
 						<p><strong>Hey!</strong></p>
 						<p>People are looking at your profile. Find out who.</p>
 					</div>
-    
+					
+					
+					
 				<!-- End Left Column -->
 				</div>
     
@@ -699,6 +715,11 @@
 			$(window).on('load', function() {
 				// Animate loader off screen
 				$(".se-pre-con").fadeOut("slow");
+			});
+			
+			$(document).on("click", ".newsBtn",function(){
+				$(".leftcol").hide();
+				$("#newsListCol").show();
 			});
 			
 			$("#dialog").dialog({
