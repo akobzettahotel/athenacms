@@ -215,7 +215,7 @@
 					</div>
 					
 					<!-- Profile -->
-					<div class="leftcol w3-card-2 w3-round w3-white">
+					<div class="leftcol mainleftcol w3-card-2 w3-round w3-white">
 						<div class="w3-container">
 							<h4 class="w3-center"><?php echo $athena["username"]; ?></h4>
 							<p class="w3-center"><img src="https://avatar-retro.com/habbo-imaging/avatarimage?figure=<?php echo $athena["look"]; ?>" class="w3-circle" style="height:106px;" alt="Avatar"></p>
@@ -232,7 +232,7 @@
 						</div>
 					</div>
 					
-					<br>
+					<br class="leftcol mainleftcol">
       
 					<!-- Accordion -->
 					<div class="leftcol w3-card-2 w3-round">
@@ -324,10 +324,10 @@
 						</div>      
 					</div>
 					
-					<br>
+					<br class="leftcol maincol">
       
 					<!-- Interests --> 
-					<div class="leftcol w3-card-2 w3-round w3-white w3-hide-small">
+					<div class="leftcol mainleftcol w3-card-2 w3-round w3-white w3-hide-small">
 						<div class="w3-container">
 							<p>Interests</p>
 							<p>
@@ -345,7 +345,10 @@
 							</p>
 						</div>
 					</div>
-					<div class="leftcol w3-card w3-white" id="newsListCol">
+					
+					<br class="leftcol maincol">
+					
+					<div class="leftcol newsleftcol w3-card w3-white" id="newsListCol">
 						<div class="w3-panel w3-theme">
 							<p>News list</p>
 							</div>
@@ -545,6 +548,23 @@
 					</div>
 				</div>
 				<!-- End Middle Column Settings -->
+				
+				<!-- Sart Middle Column news-->
+				<div id="middlecolumn_news" class="middlecolumn w3-col m7" style="display:none;">
+					<div class="w3-row-padding">
+						<div class="w3-col m12">
+							<div class="w3-card w3-white">
+								<div class="w3-container w3-theme" id="main_news_title">
+									<p>News title</p>
+								</div>
+								<div class="w3-container" id="main_news_content">
+								select a news from news list to read.
+								</div>
+							</div>
+						</div>
+					</div>
+				<!-- End Middle Column news-->
+				</div>
 	
 				<!-- start invisible dialog -->
 				<!-- TODO //Just combile this -->
@@ -576,9 +596,11 @@
 								<span class='w3-display-topright w3-tag w3-theme'>$dmy</span>
 								<br>
 								<p><strong>$gnews1[title]</strong></p>
-								<p>$gnews1[short_story]</p>";
+								<p>$gnews1[short_story]</p>
+								<p><button class='readnews w3-button w3-block w3-theme-l4' data-newsid='$gnews1[id]'>Read more</button></p>
+								";
 							?>
-								<p><button class="w3-button w3-block w3-theme-l4">Read more</button></p>
+								
 							</div>
 						</div>
 					</div>
@@ -717,9 +739,51 @@
 				$(".se-pre-con").fadeOut("slow");
 			});
 			
+			$(document).on("click", ".readnews", function(){
+				var newsid = $(this).data("newsid");
+				$(".leftcol").hide();
+				$("#newsListCol").show();
+				$(".middlecolumn").hide();
+				$("#middlecolumn_news").show();
+				$.ajax({
+					url: "engine.php",
+					type: "post",
+					data: {
+						getnewstitle: 1,
+						newsid: newsid
+					},
+					success: function(z){
+						$("#main_news_title").html(z);
+					}
+				});
+				$.ajax({
+					url: "engine.php",
+					type: "post",
+					data: {
+						getnewscontent: 1,
+						newsid: newsid
+					},
+					success: function(z){
+						$("#main_news_content").html(z);
+					}
+				});
+			});
+			
 			$(document).on("click", ".newsBtn",function(){
 				$(".leftcol").hide();
 				$("#newsListCol").show();
+				$(".middlecolumn").hide();
+				$("#middlecolumn_news").show();
+				$.ajax({
+					url: "engine.php",
+					type: "post",
+					data: {
+						getnewslist: 1
+					},
+					success: function(z){
+						$("#newsList").html(z);
+					}
+				})
 			});
 			
 			$("#dialog").dialog({

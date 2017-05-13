@@ -753,3 +753,32 @@ if(isset($_POST["changepass"]))
 		}
 	}
 }
+
+if(isset($_POST["getnewslist"]))
+{
+	$a0 = mysqli_query($conn, "SELECT * FROM zetta_news ORDER BY id DESC");
+	while($a1 = mysqli_fetch_assoc($a0))
+	{
+		echo "<li class='readnews' data-newsid='$a1[id]'>$a1[title]</li>";
+	}
+}
+
+if(isset($_POST["getnewstitle"]))
+{
+	$newsid = mysqli_real_escape_string($conn, $_POST["newsid"]);
+	$a0 = mysqli_fetch_assoc(mysqli_query($conn, "SELECT title FROM zetta_news WHERE id = '$newsid'"));
+	echo "<p>$a0[title]</p>";
+}
+if(isset($_POST["getnewscontent"]))
+{
+	$newsid = mysqli_real_escape_string($conn, $_POST["newsid"]);
+	$a0 = mysqli_fetch_assoc(mysqli_query($conn, "SELECT * FROM zetta_news WHERE id = '$newsid'"));
+	$a1 = date("d/m/Y", $a0["published"]);
+	$author = mysqli_fetch_assoc(mysqli_query($conn, "SELECT username FROM users WHERE id = '$a0[author]'"));
+	echo "<div class='w3-display-container'><h3>$a0[title]</h3>
+	<div class='w3-display-right w3-small w3-tag w3-round w3-theme' style='padding:3px'>
+  <div class='w3-tag w3-round w3-theme w3-border w3-border-white'>
+    Published: $a1
+  </div>
+</div></div><hr>$a0[long_story]<hr>By: <u>$author[username]</u>";
+}
